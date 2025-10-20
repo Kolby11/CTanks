@@ -1,0 +1,36 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build All",
+			"type": "shell",
+			"command": "mingw32-make",
+			"args": ["all"],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": ["$gcc"]
+		},
+		{
+			"label": "Build Server",
+			"type": "shell",
+			"command": "mingw32-make",
+			"args": ["server"],
+			"problemMatcher": ["$gcc"]
+		},
+		{
+			"label": "Build Client",
+			"type": "shell",
+			"command": "mingw32-make",
+			"args": ["client"],
+			"problemMatcher": ["$gcc"]
+		},
+		{
+			"label": "Clean",
+			"type": "shell",
+			"command": "mingw32-make",
+			"args": ["clean"]
+		}
+	]
+}
