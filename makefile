@@ -4,7 +4,7 @@ CC = gcc
 # Detect OS
 ifeq ($(OS),Windows_NT)
     # Windows-specific settings
-    CFLAGS = -Wall -Wextra -g -I./shared
+    CFLAGS = -Wall -Wextra -g -I./shared -I./server
     LDFLAGS = -lws2_32
     RM = del /Q
     RMDIR = rmdir /S /Q
@@ -13,7 +13,7 @@ ifeq ($(OS),Windows_NT)
     PATH_SEP = \\
 else
     # Linux/Unix settings
-    CFLAGS = -Wall -Wextra -g -I./shared
+    CFLAGS = -Wall -Wextra -g -I./shared -I./server
     LDFLAGS = 
     RM = rm -f
     RMDIR = rm -rf
@@ -29,8 +29,8 @@ SHARED_DIR = shared
 BIN_DIR = bin
 
 # Source files
-SERVER_SOURCES = $(SERVER_DIR)/main.c $(SERVER_DIR)/connection.c
-CLIENT_SOURCES = $(CLIENT_DIR)/main.c $(CLIENT_DIR)/connection.c
+SERVER_SOURCES = $(SERVER_DIR)/main.c $(SERVER_DIR)/connection/socket.c
+CLIENT_SOURCES = $(CLIENT_DIR)/main.c $(CLIENT_DIR)/connection/socket.c
 SHARED_SOURCES = $(wildcard $(SHARED_DIR)/*.c)
 
 # Object files
@@ -69,12 +69,16 @@ $(CLIENT_BIN): $(CLIENT_OBJECTS) $(SHARED_OBJECTS)
 clean:
 ifeq ($(OS),Windows_NT)
 	@del /Q $(SERVER_DIR)\*.o 2>nul || exit 0
+	@del /Q $(SERVER_DIR)\connection\*.o 2>nul || exit 0
 	@del /Q $(CLIENT_DIR)\*.o 2>nul || exit 0
+	@del /Q $(CLIENT_DIR)\connection\*.o 2>nul || exit 0
 	@del /Q $(SHARED_DIR)\*.o 2>nul || exit 0
 	@del /Q $(BIN_DIR)\*.exe 2>nul || exit 0
 	@if exist $(BIN_DIR) rmdir $(BIN_DIR) 2>nul || exit 0
 else
-	@$(RM) $(SERVER_DIR)/*.o $(CLIENT_DIR)/*.o $(SHARED_DIR)/*.o
+	@$(RM) $(SERVER_DIR)/*.o $(SERVER_DIR)/connection/*.o
+	@$(RM) $(CLIENT_DIR)/*.o $(CLIENT_DIR)/connection/*.o
+	@$(RM) $(SHARED_DIR)/*.o
 	@$(RMDIR) $(BIN_DIR)
 endif
 
