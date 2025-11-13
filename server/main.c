@@ -19,39 +19,23 @@ int main() {
     printf("Network initialized\n");
     
     // Create server socket
-    socket_t serverSock = create_server_socket(PORT, &server);
-#ifdef _WIN32
-    if (serverSock == INVALID_SOCKET) {
-        printf("Failed to create server socket\n");
-        cleanup_network(serverSock);
-        return 1;
-    }
-#else
+    int serverSock = create_server_socket(PORT, &server);
     if (serverSock < 0) {
         printf("Failed to create server socket\n");
         cleanup_network(serverSock);
         return 1;
     }
-#endif
     
     printf("Server is ready. Listening on port %d\n", PORT);
     printf("Waiting for client connection...\n");
     
     // Accept client
-    socket_t clientSock = accept_client(serverSock, &client);
-#ifdef _WIN32
-    if (clientSock == INVALID_SOCKET) {
-        printf("Failed to accept client\n");
-        cleanup_network(serverSock);
-        return 1;
-    }
-#else
+    int clientSock = accept_client(serverSock, &client);
     if (clientSock < 0) {
         printf("Failed to accept client\n");
         cleanup_network(serverSock);
         return 1;
     }
-#endif
     
     // Get client IP
     char clientIP[INET_ADDRSTRLEN];
@@ -89,14 +73,8 @@ int main() {
     
     // Cleanup
     printf("Closing connections...\n");
-#ifdef _WIN32
-    closesocket(clientSock);
-    closesocket(serverSock);
-    WSACleanup();
-#else
     close(clientSock);
     close(serverSock);
-#endif
     
     printf("Server stopped\n");
     return 0;

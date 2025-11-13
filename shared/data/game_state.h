@@ -1,0 +1,10 @@
+#ifndef SHARED_DATA_GAME_STATE_H
+#define SHARED_DATA_GAME_STATE_H
+
+enum GameState {
+    GAME_STATE_WAITING,
+    GAME_STATE_RUNNING,
+    GAME_STATE_OVER
+};
+
+#endif
