@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-
+#include <pthread.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -9,16 +9,14 @@
 #include "connection/socket.h"
 #include "shared/serialization/movement.h"
 #include "shared/serialization/player_id.h"
+#include "client/connection/client.h"
+#include "shared/models/client.h"
 
 #define PORT 5432
 #define BUFF_SIZE 1024
 
-PlayerId player_id = 0;
-
-int main() {
+int main(void) {
     struct sockaddr_in server;
-    char buffer[BUFF_SIZE];
-    int player_id = 1;
 
     // Connect to server
     int sock = connect_server("127.0.0.1", PORT, &server);
@@ -29,18 +27,22 @@ int main() {
 
     printf("Connected to server on port %d\n", PORT);
 
-    // serialize_movement(player_id, 1, 0, buffer, BUFF_SIZE);
-    send(sock, buffer, strlen(buffer), 0);
+    Client *client = malloc(sizeof(Client));
+    client->sock = sock;
+    // init player id to something known (0 for now)
+    client->player.id = 0;
 
-    // Receive response
-    memset(buffer, 0, BUFF_SIZE);
-    recv(sock, buffer, BUFF_SIZE, 0);
+    pthread_t tid;
+    int err = pthread_create(&tid, NULL, connection_thread, client);
+    if (err != 0) {
+        printf("Failed to create thread\n");
+        close(sock);
+        free(client);
+        return 1;
+    }
 
-    deserialize_player_id(buffer, &player_id);
-    printf("Response from server: %d\n", player_id);
+    pthread_join(tid, NULL);
 
-    // Cleanup
-    cleanup_socket(sock);
-
+    printf("Main exiting\n");
     return 0;
 }

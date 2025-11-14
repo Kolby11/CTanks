@@ -40,6 +40,7 @@ int create_server_socket(int port, struct sockaddr_in *server) {
     return serverSock;
 }
 
+
 int accept_client(int serverSock, struct sockaddr_in *client) {
     socklen_t clientLen = sizeof(*client);
     int clientSock = accept(serverSock, (struct sockaddr*)client, &clientLen);

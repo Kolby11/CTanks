@@ -6,43 +6,17 @@
 
 #include "connection/socket.h"
 #include "shared/serialization/player_id.h"
+#include "shared/models/client.h"
+#include "server/connection/client.h"
 
 #define PORT 5432
 #define BUFF_SIZE 1024
-#define MAX_PLAYERS 4
-
-typedef struct {
-    int sock;
-    int player_id;
-} ClientContext;
+#define MAX_CLIENTS 4
 
 pthread_mutex_t players_mutex = PTHREAD_MUTEX_INITIALIZER;
 int player_count = 0;
 
-void* client_thread(void *arg) {
-    ClientContext *ctx = (ClientContext*)arg;
-    char buffer[BUFF_SIZE];
-
-    printf("Client thread started for player %d\n", ctx->player_id);
-
-    while (1) {
-        memset(buffer, 0, sizeof(buffer));
-        int bytes = recv(ctx->sock, buffer, sizeof(buffer) - 1, 0);
-        if (bytes <= 0) {
-            printf("Player %d disconnected\n", ctx->player_id);
-            break;
-        }
-
-        printf("Player %d says: %s\n", ctx->player_id, buffer);
-        send(ctx->sock, buffer, bytes, 0);
-    }
-
-    close(ctx->sock);
-
-    // Optionally decrement player_count with mutex, mark slot free, etc.
-    free(ctx);
-    return NULL;
-}
+Client clients[MAX_CLIENTS];
 
 int main(void) {
     struct sockaddr_in server, client;
@@ -65,27 +39,28 @@ int main(void) {
         }
 
         pthread_mutex_lock(&players_mutex);
-        if (player_count >= MAX_PLAYERS) {
+
+        if (player_count >= MAX_CLIENTS) {
             pthread_mutex_unlock(&players_mutex);
             const char *msg = "{\"error\": \"server full\"}";
             send(client_sock, msg, strlen(msg), 0);
             close(client_sock);
             continue;
         }
-        int this_id = player_count++;
+
+        Client *client = malloc(sizeof(Client));
+        client->sock = client_sock;
+        client->player.id = player_count++;
+
         pthread_mutex_unlock(&players_mutex);
 
         char id_buf[64];
-        serialize_player_id(this_id, id_buf, sizeof(id_buf));
+        serialize_player_id(client->player.id, id_buf, sizeof(id_buf));
         send(client_sock, id_buf, strlen(id_buf), 0);
 
-        ClientContext *ctx = malloc(sizeof(ClientContext));
-        ctx->sock = client_sock;
-        ctx->player_id = this_id;
-
         pthread_t tid;
-        pthread_create(&tid, NULL, client_thread, ctx);
-        pthread_detach(tid); // no need to join
+        pthread_create(&tid, NULL, connection_thread, client);
+        pthread_detach(tid);
     }
 
     close(server_sock);
