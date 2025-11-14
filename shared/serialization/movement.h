@@ -3,7 +3,13 @@
 
 #include <stdio.h>
 
-void serialize_movement(int player, int x, int y, int z, char *buffer, size_t buffer_size);
-int deserialize_movement(const char *buffer, int *player, int *x, int *y, int *z);
+typedef struct PlayerMovementData {
+    int player;
+    int x;
+    int y;
+} PlayerMovementData;
+
+void serialize_movement(const PlayerMovementData *data, char *buffer, size_t buffer_size);
+int deserialize_movement(const char *buffer, const PlayerMovementData *out);
 
 #endif

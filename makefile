@@ -4,7 +4,7 @@ CC = gcc
 # Detect OS
 ifeq ($(OS),Windows_NT)
     # Windows-specific settings
-    CFLAGS = -Wall -Wextra -g -I./shared -I./server
+    CFLAGS = -Wall -Wextra -g -I. -I./shared -I./server
     LDFLAGS = -lws2_32
     RM = del /Q
     RMDIR = rmdir /S /Q
@@ -13,8 +13,8 @@ ifeq ($(OS),Windows_NT)
     PATH_SEP = \\
 else
     # Linux/Unix settings
-    CFLAGS = -Wall -Wextra -g -I./shared -I./server
-    LDFLAGS = 
+    CFLAGS = -Wall -Wextra -g -I. -I./shared -I./server
+    LDFLAGS =
     RM = rm -f
     RMDIR = rm -rf
     MKDIR = mkdir -p
@@ -26,12 +26,12 @@ endif
 SERVER_DIR = server
 CLIENT_DIR = client
 SHARED_DIR = shared
-BIN_DIR = bin
+BIN_DIR    = bin
 
-# Source files
-SERVER_SOURCES = $(SERVER_DIR)/main.c $(SERVER_DIR)/connection/socket.c
-CLIENT_SOURCES = $(CLIENT_DIR)/main.c $(CLIENT_DIR)/connection/socket.c
-SHARED_SOURCES = $(wildcard $(SHARED_DIR)/*.c)
+# Source files (automatic: top level + one subdir level)
+SERVER_SOURCES = $(wildcard $(SERVER_DIR)/*.c $(SERVER_DIR)/*/*.c)
+CLIENT_SOURCES = $(wildcard $(CLIENT_DIR)/*.c $(CLIENT_DIR)/*/*.c)
+SHARED_SOURCES = $(wildcard $(SHARED_DIR)/*.c $(SHARED_DIR)/*/*.c)
 
 # Object files
 SERVER_OBJECTS = $(SERVER_SOURCES:.c=.o)
@@ -54,14 +54,14 @@ else
 endif
 
 # Server target
-$(SERVER_BIN): $(SERVER_OBJECTS) $(SHARED_OBJECTS)
+$(SERVER_BIN): $(SERVER_OBJECTS) $(SHARED_OBJECTS) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Client target
-$(CLIENT_BIN): $(CLIENT_OBJECTS) $(SHARED_OBJECTS)
+$(CLIENT_BIN): $(CLIENT_OBJECTS) $(SHARED_OBJECTS) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-# Compile .c files to .o files
+# Compile .c files to .o files (generic rule)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -76,9 +76,7 @@ ifeq ($(OS),Windows_NT)
 	@del /Q $(BIN_DIR)\*.exe 2>nul || exit 0
 	@if exist $(BIN_DIR) rmdir $(BIN_DIR) 2>nul || exit 0
 else
-	@$(RM) $(SERVER_DIR)/*.o $(SERVER_DIR)/connection/*.o
-	@$(RM) $(CLIENT_DIR)/*.o $(CLIENT_DIR)/connection/*.o
-	@$(RM) $(SHARED_DIR)/*.o
+	@find . -name '*.o' -delete
 	@$(RMDIR) $(BIN_DIR)
 endif
 
@@ -91,7 +89,6 @@ run-client: $(CLIENT_BIN)
 
 # Individual targets
 server: $(BIN_DIR) $(SERVER_BIN)
-
 client: $(BIN_DIR) $(CLIENT_BIN)
 
 # Phony targets

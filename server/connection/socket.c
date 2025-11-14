@@ -6,14 +6,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-int initialize_network();
 int create_server_socket(int port, struct sockaddr_in *server);
 int accept_client(int serverSock, struct sockaddr_in *client);
 void cleanup_network(int sock);
-
-int initialize_network() {
-    return 1;
-}
 
 int create_server_socket(int port, struct sockaddr_in *server) {
     int serverSock = socket(AF_INET, SOCK_STREAM, 0);

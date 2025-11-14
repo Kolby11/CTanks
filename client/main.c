@@ -7,14 +7,18 @@
 #include <unistd.h>
 
 #include "connection/socket.h"
+#include "shared/serialization/movement.h"
+#include "shared/serialization/player_id.h"
 
 #define PORT 5432
 #define BUFF_SIZE 1024
 
+PlayerId player_id = 0;
+
 int main() {
     struct sockaddr_in server;
     char buffer[BUFF_SIZE];
-    int a = 2, b = 5;
+    int player_id = 1;
 
     // Connect to server
     int sock = connect_server("127.0.0.1", PORT, &server);
@@ -24,16 +28,16 @@ int main() {
     }
 
     printf("Connected to server on port %d\n", PORT);
-    printf("Sending numbers %d and %d\n", a, b);
 
-    // Send data
-    sprintf(buffer, "%d %d", a, b);
+    // serialize_movement(player_id, 1, 0, buffer, BUFF_SIZE);
     send(sock, buffer, strlen(buffer), 0);
 
     // Receive response
     memset(buffer, 0, BUFF_SIZE);
     recv(sock, buffer, BUFF_SIZE, 0);
-    printf("Response from server: %s\n", buffer);
+
+    deserialize_player_id(buffer, &player_id);
+    printf("Response from server: %d\n", player_id);
 
     // Cleanup
     cleanup_socket(sock);

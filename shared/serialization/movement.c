@@ -1,9 +1,15 @@
 #include <stdio.h>
+#include <string.h>
+#include "movement.h"
 
-void serialize_movement(int player, int x, int y, int z, char *buffer, size_t buffer_size) {
-    snprintf(buffer, buffer_size, "{'player': '%d', 'move': '%d %d %d'}", player, x, y, z);
+void serialize_movement_data(const PlayerMovementData *data, char *buffer, size_t buffer_size) {
+    snprintf(buffer, buffer_size,
+        "{\"player\": %d, \"move\": \"(%d %d)\"}",
+        data->player, data->x, data->y);
 }
 
-int deserialize_movement(const char *buffer, int *player, int *x, int *y, int *z) {
-    return sscanf(buffer, "{'player': '%d', 'move': '%d %d %d'}", player, x, y, z);
+int deserialize_movement(const char *buffer, const PlayerMovementData *out) {
+    return sscanf(buffer,
+        "{\"player\": %d, \"move\": \"(%d %d)\"}",
+        out->player, out->x, out->y);
 }
