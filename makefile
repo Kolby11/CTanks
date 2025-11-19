@@ -1,6 +1,5 @@
 CC = gcc
 
-# Detect OS
 ifeq ($(OS),Windows_NT)
     CFLAGS  = -Wall -Wextra -g -I. -I./server -I./client -I./shared
     LDFLAGS = -lws2_32
@@ -21,11 +20,13 @@ endif
 
 BIN_DIR = bin
 
+MAIN = main.c
 SERVER_DIR = server
 CLIENT_DIR = client
 SHARED_DIR = shared
 
 APP_SOURCES = \
+    $(MAIN) \
     $(wildcard $(SERVER_DIR)/*.c $(SERVER_DIR)/*/*.c) \
     $(wildcard $(CLIENT_DIR)/*.c $(CLIENT_DIR)/*/*.c) \
     $(wildcard $(SHARED_DIR)/*.c $(SHARED_DIR)/*/*.c)
@@ -43,7 +44,6 @@ else
 	@$(MKDIR) $(BIN_DIR)
 endif
 
-# App target
 $(APP_BIN): $(APP_OBJECTS) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
@@ -52,12 +52,6 @@ $(APP_BIN): $(APP_OBJECTS) | $(BIN_DIR)
 
 clean:
 ifeq ($(OS),Windows_NT)
-	@del /Q $(SERVER_DIR)\*.o 2>nul || exit 0
-	@del /Q $(SERVER_DIR)\connection\*.o 2>nul || exit 0
-	@del /Q $(CLIENT_DIR)\*.o 2>nul || exit 0
-	@del /Q $(CLIENT_DIR)\connection\*.o 2>nul || exit 0
-	@del /Q $(SHARED_DIR)\*.o 2>nul || exit 0
-	@del /Q $(BIN_DIR)\*.exe 2>nul || exit 0
 	@if exist $(BIN_DIR) rmdir $(BIN_DIR) 2>nul || exit 0
 else
 	@find . -name '*.o' -delete

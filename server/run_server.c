@@ -9,21 +9,11 @@
 #include "shared/models/client.h"
 #include "server/connection/client.h"
 
-#define PORT 5432
-#define BUFF_SIZE 1024
-#define MAX_CLIENTS 4
-
-#define MAX_SERVERS 10
-
-int server_count = 0;
-int server_socks[MAX_SERVERS];
-
 pthread_mutex_t players_mutex = PTHREAD_MUTEX_INITIALIZER;
-int player_count = 0;
 
-Client clients[MAX_CLIENTS];
-
-int run_server(void) {
+int run_server(const int PORT, const int MAX_PLAYERS) {
+    int player_count = 0;
+    Client clients[MAX_PLAYERS];
     struct sockaddr_in server, client;
 
     int server_sock = create_server_socket(PORT, &server);
@@ -45,7 +35,7 @@ int run_server(void) {
 
         pthread_mutex_lock(&players_mutex);
 
-        if (player_count >= MAX_CLIENTS) {
+        if (player_count >= MAX_PLAYERS) {
             pthread_mutex_unlock(&players_mutex);
             const char *msg = "{\"error\": \"server full\"}";
             send(client_sock, msg, strlen(msg), 0);

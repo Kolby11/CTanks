@@ -1,37 +1,58 @@
-#include "client/connection/socket.h"
-#include "server/connection/socket.h"
 #include <netinet/in.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
 
-void main_menu(){
-    int option;
-    printf("1. Host game\n");
-    printf("2. Join game\n");
-    printf("Select an option: ");
-    if (scanf("%d", &option) != 1) {
-        printf("Failed to read option\n");
+#include "client/connection/socket.h"
+#include "client/run_client.h"
+#include "client/game_menu/dialogs.h"
+
+#include "server/run_server.h"
+
+#include "shared/validation/network.h"
+
+#define MAX_PLAYERS 4
+
+int main_menu(void) {
+    char ipv4_addr[16] = "127.0.0.1\0";
+    int port = 5432;
+    pid_t pid = -1;
+
+    int option = ask_for_host_or_join();
+
+    if (option == 1) {
+        ask_for_port(&port);
+        pid = fork();
+        if (pid < 0) {
+            printf("Creating client process failed\n");
+            return 1;
+        }
+
+        if (pid > 0) {
+            run_server(port, MAX_PLAYERS);
+            return 0;
+        }
+    } else if (option == 2) {
+        ask_for_ip(ipv4_addr, sizeof(ipv4_addr));
+        ask_for_port(&port);
+
+        printf("Using IP: %s\n", ipv4_addr);
+        printf("Using Port: %d\n", port);
+    } else {
+        printf("Invalid option\n");
         return 1;
     }
 
-    if(option == 1){
-        int port;
-        printf("Enter port to host server on: ");
-        scanf("%d", &port);
+    if (option == 2 || pid == 0) {
         struct sockaddr_in server;
-        int server_sock = create_server_socket(port, &server);
-        if (server_sock < 0) {
-            printf("Failed to create server socket\n");
+        if (connect_server(ipv4_addr, port, &server) < 0) {
+            printf("Failed to connect to server\n");
             return 1;
         }
-    } else if(option == 2){
-        char ipv4_addr[15];
-        int port;
-        printf("Enter server IPv4 address: ");
-        scanf("%s", ipv4_addr);
-        printf("Enter server port: ");
-        scanf("%d", &port);
-        struct sockaddr_in server;
-        connect_server(ipv4_addr, port, &server);
-    } else {
-        printf("Invalid option\n");
+
+        run_client();
+        return 0;
     }
+
+    return 0;
 }
