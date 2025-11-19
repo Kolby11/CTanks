@@ -1,5 +1,5 @@
-#ifndef SERVER_SOCKET_H
-#define SERVER_SOCKET_H
+#ifndef CLIENT_SOCKET_H
+#define CLIENT_SOCKET_H
 
 #include <netinet/in.h>
 

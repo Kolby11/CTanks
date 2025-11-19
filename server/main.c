@@ -13,22 +13,27 @@
 #define BUFF_SIZE 1024
 #define MAX_CLIENTS 4
 
+#define MAX_SERVERS 10
+
+int server_count = 0;
+int server_socks[MAX_SERVERS];
+
 pthread_mutex_t players_mutex = PTHREAD_MUTEX_INITIALIZER;
 int player_count = 0;
 
 Client clients[MAX_CLIENTS];
 
-int main(void) {
+int run_server(void) {
     struct sockaddr_in server, client;
 
     int server_sock = create_server_socket(PORT, &server);
     if (server_sock < 0) {
-        printf("Failed to create server socket\n");
+        printf("Failed to main create server socket\n");
         cleanup_network(server_sock);
         return 1;
     }
 
-    printf("Server listening on port %d\n", PORT);
+    printf("Main server listening on port %d\n", PORT);
 
     while (1) {
         socklen_t client_len = sizeof(client);
@@ -59,7 +64,7 @@ int main(void) {
         send(client_sock, id_buf, strlen(id_buf), 0);
 
         pthread_t tid;
-        pthread_create(&tid, NULL, connection_thread, client);
+        pthread_create(&tid, NULL, server_connection_thread, client);
         pthread_detach(tid);
     }
 

@@ -1,6 +1,6 @@
-#ifndef SERVER_CONNECTION_CLIENT_C
-#define SERVER_CONNECTION_CLIENT_C
+#ifndef CLIENT_CONNECTION_C
+#define CLIENT_CONNECTION_C
 
-void* connection_thread(void *arg);
+void* client_connection_thread(void *arg);
 
 #endif

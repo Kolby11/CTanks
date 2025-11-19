@@ -4,6 +4,8 @@
         "movement.h": "c",
         "player_id.h": "c",
         "stdio.h": "c",
-        "client.h": "c"
+        "client.h": "c",
+        "socket.h": "c",
+        "game_menu.h": "c"
     }
 }

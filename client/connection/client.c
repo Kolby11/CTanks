@@ -3,7 +3,7 @@
 
 #define BUFF_SIZE 1024
 
-void* connection_thread(void *arg) {
+void* client_connection_thread(void *arg) {
     Client *client = (Client*)arg;
     char buffer[BUFF_SIZE];
 
