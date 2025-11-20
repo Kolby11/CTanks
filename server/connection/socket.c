@@ -13,10 +13,6 @@ int create_server_socket(int port, struct sockaddr_in *server) {
         return -1;
     }
     
-    // Allow socket reuse
-    int opt = 1;
-    setsockopt(serverSock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    
     server->sin_family = AF_INET;
     server->sin_addr.s_addr = INADDR_ANY;
     server->sin_port = htons(port);

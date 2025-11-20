@@ -1,5 +1,5 @@
-#ifndef SHARED_DATA_PLAYER_H
-#define SHARED_DATA_PLAYER_H
+#ifndef SHARED_MODELS_PLAYER_H
+#define SHARED_MODELS_PLAYER_H
 
 typedef int PlayerId;
 

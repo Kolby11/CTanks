@@ -6,6 +6,8 @@
         "stdio.h": "c",
         "client.h": "c",
         "socket.h": "c",
-        "game_menu.h": "c"
+        "game_menu.h": "c",
+        "message.h": "c",
+        "network.h": "c"
     }
 }

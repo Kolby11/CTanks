@@ -6,9 +6,6 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-int connect_server(const char *ip_addr, int port, struct sockaddr_in *server);
-void cleanup_socket(int sock);
-
 int connect_server(const char *ip_addr, int port, struct sockaddr_in *server) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {

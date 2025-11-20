@@ -1,5 +1,5 @@
-#ifndef SHARED_DATA_CLIENT_H
-#define SHARED_DATA_CLIENT_H
+#ifndef SHARED_MODELS_CLIENT_H
+#define SHARED_MODELS_CLIENT_H
 
 #include "player.h"
 

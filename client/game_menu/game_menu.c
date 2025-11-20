@@ -35,23 +35,13 @@ int main_menu(void) {
     } else if (option == 2) {
         ask_for_ip(ipv4_addr, sizeof(ipv4_addr));
         ask_for_port(&port);
-
-        printf("Using IP: %s\n", ipv4_addr);
-        printf("Using Port: %d\n", port);
     } else {
         printf("Invalid option\n");
         return 1;
     }
 
     if (option == 2 || pid == 0) {
-        struct sockaddr_in server;
-        if (connect_server(ipv4_addr, port, &server) < 0) {
-            printf("Failed to connect to server\n");
-            return 1;
-        }
-
-        run_client();
-        return 0;
+        run_client(ipv4_addr, port);
     }
 
     return 0;
