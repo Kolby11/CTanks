@@ -1,22 +1,23 @@
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 
 #include "connection/socket.h"
-#include "shared/serialization/player_id.h"
 #include "shared/models/client.h"
 #include "server/connection/client.h"
-#include "shared/serialization/message.h"
+#include "shared/connection/socket.h"
 
 pthread_mutex_t players_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int run_server(const int PORT, const int MAX_PLAYERS) {
-    int player_count = 0;
+int run_server(const int PORT, const int MAX_PLAYERS, int *PIPE_FD) {
+    close(PIPE_FD[0]);
+    int client_count = 0;
     Client clients[MAX_PLAYERS];
     struct sockaddr_in server, client;
-
+    
     int server_sock = create_server_socket(PORT, &server);
     if (server_sock < 0) {
         printf("Failed to main create server socket\n");
@@ -25,10 +26,13 @@ int run_server(const int PORT, const int MAX_PLAYERS) {
     }
 
     printf("Server listening on port %d\n", PORT);
+    write(PIPE_FD[1], &PORT, 1);
+    close(PIPE_FD[1]);
 
     while (1) {
-        socklen_t client_len = sizeof(client);
         int client_sock = accept_client(server_sock, &client);
+        Client *client = malloc(sizeof(Client));
+        client->sock = client_sock;
 
         if (client_sock < 0) {
             printf("Accept failed\n");
@@ -37,33 +41,20 @@ int run_server(const int PORT, const int MAX_PLAYERS) {
         
         pthread_mutex_lock(&players_mutex);
         
-        if (player_count >= MAX_PLAYERS) {
+        if (client_count >= MAX_PLAYERS) {
             pthread_mutex_unlock(&players_mutex);
-            const char *msg = "{\"error\": \"server full\"}";
-            send(client_sock, msg, strlen(msg), 0);
+            int data = 1;
+            send_message(client, SERVER_FULL, &data, sizeof(int));
             close(client_sock);
             continue;
         }
         
-        Client *client = malloc(sizeof(Client));
-        client->sock = client_sock;
-        client->player.id = ++player_count;
-        
+        client->player.id = ++client_count;
+        clients[client_count] = *client;
         printf("Player %d connected!\n", client->player.id);
         pthread_mutex_unlock(&players_mutex);
-
-        char id_buf[256] = {0};
         
-        serialize_player_id(client->player.id, id_buf, sizeof(id_buf));
-
-        Message msg = {0};
-        msg.action = PLAYER_ASSIGNED_ID;
-        strcpy(msg.data, id_buf);
-
-        char buffer[256] = {0};
-
-        serialize_message(&msg, buffer, sizeof(buffer));
-        send(client_sock, buffer, strlen(buffer), 0);
+        send_message(client, PLAYER_ASSIGNED_ID, client->player.id, sizeof(PlayerId));
 
         pthread_t tid;
         pthread_create(&tid, NULL, server_connection_thread, client);

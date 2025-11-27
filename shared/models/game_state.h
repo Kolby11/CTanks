@@ -1,7 +1,7 @@
 #ifndef SHARED_MODELS_GAME_STATE_H
 #define SHARED_MODELS_GAME_STATE_H
 
-typedef enum GameState {
+typedef enum {
     GAME_STATE_WAITING,
     GAME_STATE_RUNNING,
     GAME_STATE_OVER
