@@ -6,12 +6,13 @@
 #define MAX_DATA_SIZE 512
 
 typedef enum {
-    SERVER_FULL,
-    PLAYER_ASSIGNED_ID,
-    GAME_STATE_CHANGED,
-    PLAYER_JOINED,
-    PLAYER_LEFT,
-    PLAYER_MOVED,
+    NONE,
+    SERVER_STATUS,
+    GAME_STATE,
+    PLAYER_ASSIGN_ID,
+    PLAYER_JOIN,
+    PLAYER_LEAVE,
+    PLAYER_MOVE,
 } MessageType;
 
 typedef GameState GameStateChangedData;

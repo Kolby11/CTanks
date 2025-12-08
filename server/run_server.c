@@ -44,7 +44,7 @@ int run_server(const int PORT, const int MAX_PLAYERS, int *PIPE_FD) {
         if (client_count >= MAX_PLAYERS) {
             pthread_mutex_unlock(&players_mutex);
             int data = 1;
-            send_message(client, SERVER_FULL, &data, sizeof(int));
+            send_message(client, SERVER_STATUS, &data, sizeof(int));
             close(client_sock);
             continue;
         }
@@ -53,8 +53,8 @@ int run_server(const int PORT, const int MAX_PLAYERS, int *PIPE_FD) {
         clients[client_count] = *client;
         printf("Player %d connected!\n", client->player.id);
         pthread_mutex_unlock(&players_mutex);
-        
-        send_message(client, PLAYER_ASSIGNED_ID, client->player.id, sizeof(PlayerId));
+
+        send_message(client, PLAYER_ASSIGN_ID, &client->player.id, sizeof(PlayerId));
 
         pthread_t tid;
         pthread_create(&tid, NULL, server_connection_thread, client);
