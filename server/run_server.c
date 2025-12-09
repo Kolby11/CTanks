@@ -7,7 +7,6 @@
 
 #include "connection/socket.h"
 #include "shared/models/client.h"
-#include "server/connection/client.h"
 #include "shared/connection/socket.h"
 
 pthread_mutex_t players_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -56,8 +55,15 @@ int run_server(const int PORT, const int MAX_PLAYERS, int *PIPE_FD) {
 
         send_message(client, PLAYER_ASSIGN_ID, &client->player.id, sizeof(PlayerId));
 
+        ClientThreadContext *ctx = malloc(sizeof(ClientThreadContext));
+        ctx->client = client;
+        ctx->all_clients = clients;
+        ctx->client_count = &client_count;
+        ctx->max_players = MAX_PLAYERS;
+        ctx->mutex = &players_mutex;
+
         pthread_t tid;
-        pthread_create(&tid, NULL, server_connection_thread, client);
+        pthread_create(&tid, NULL, server_connection_thread, ctx);
         pthread_detach(tid);
     }
 

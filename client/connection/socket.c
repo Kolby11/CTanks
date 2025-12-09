@@ -74,10 +74,10 @@ int client_receive_message(Client *client) {
             printf("Player %d left\n", client->player.id);
             break;
         case PLAYER_MOVE: {
-            MoveDirection move_direction;
-            bytes_received = recv(client->sock, &move_direction, sizeof(MoveDirection), 0);
+            MoveData move_data;
+            bytes_received = recv(client->sock, &move_data, sizeof(MoveData), 0);
             if (bytes_received > 0) {
-                printf("Player %d moved: %d\n", client->player.id, move_direction);
+                printf("Player %d moved: %d\n", move_data.player_id, move_data.direction);
             }
             break;
         }

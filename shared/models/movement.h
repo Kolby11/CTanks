@@ -8,4 +8,9 @@ typedef enum {
     RIGHT,
 } MoveDirection;
 
+typedef struct {
+    PlayerId player_id;
+    MoveDirection direction;
+} MoveData;
+
 #endif

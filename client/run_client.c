@@ -47,7 +47,7 @@ int run_client(char *ipv4_addr, int port) {
     
     // Initialize input handling
     init_input();
-    printf("Input initialized. Use WASD for movement, Q to quit.\n");
+    printf("Use WASD for movement, Q to quit.\n");
     
     int running = 1;
     

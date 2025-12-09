@@ -51,7 +51,7 @@ void handle_input(Client *client) {
         char key = read_key();
         
         if (key != 0) {
-            printf("Key pressed: %c\n", key);  // Debug print
+            // printf("Key pressed: %c\n", key);
             
             switch(key) {
                 case 'w':
