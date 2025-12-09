@@ -70,7 +70,7 @@ int client_receive_message(Client *client) {
             PlayerId player_id;
             bytes_received = recv(client->sock, &player_id, sizeof(PlayerId), MSG_DONTWAIT);
             if (bytes_received > 0) {
-                printf("Player %d joined\n", player_id);
+                printf("Player %d connected\n", player_id);
             }
             break;
         }
@@ -78,7 +78,7 @@ int client_receive_message(Client *client) {
             PlayerId player_id;
             bytes_received = recv(client->sock, &player_id, sizeof(PlayerId), MSG_DONTWAIT);
             if (bytes_received > 0) {
-                printf("Player %d left\n", player_id);
+                printf("Player %d disconnected\n", player_id);
             }
             break;
         }

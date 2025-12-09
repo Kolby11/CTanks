@@ -14,6 +14,10 @@ pthread_mutex_t players_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int run_server(const int PORT, const int MAX_PLAYERS, int *PIPE_FD) {
     close(PIPE_FD[0]);
+
+    // Ignore SIGPIPE to prevent server crash on broken pipe
+    signal(SIGPIPE, SIG_IGN);
+
     int client_count = 0;
     Client clients[MAX_PLAYERS];
     struct sockaddr_in server, client;

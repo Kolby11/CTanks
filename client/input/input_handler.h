@@ -7,6 +7,6 @@ void init_input();
 void restore_input();
 int kbhit();
 char read_key();
-void handle_input(Client *client, int *running);
+int handle_input(Client *client, int *running);
 
 #endif

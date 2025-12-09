@@ -17,11 +17,9 @@ int send_message(Client *client, MessageType message_type, void *data, size_t da
         return -1;
     }
 
-    // Send message type
-    ssize_t result = send(client->sock, &message_type, sizeof(MessageType), 0);
+    ssize_t result = send(client->sock, &message_type, sizeof(MessageType), MSG_NOSIGNAL);
     if (result < 0) {
         if (errno == EPIPE || errno == ECONNRESET || errno == ENOTCONN) {
-            // Connection closed, mark socket as invalid
             client->sock = -1;
         }
         return -1;
@@ -29,7 +27,7 @@ int send_message(Client *client, MessageType message_type, void *data, size_t da
 
     // Send data if there is any
     if (data != NULL && data_size > 0) {
-        result = send(client->sock, data, data_size, 0);
+        result = send(client->sock, data, data_size, MSG_NOSIGNAL);
         if (result < 0) {
             if (errno == EPIPE || errno == ECONNRESET || errno == ENOTCONN) {
                 client->sock = -1;

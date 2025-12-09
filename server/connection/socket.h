@@ -18,7 +18,6 @@ typedef struct {
     int *client_count;
     int max_players;
     pthread_mutex_t *mutex;
-    volatile sig_atomic_t *shutdown_flag;
 } ClientThreadContext;
 
 int create_server_socket(int port, struct sockaddr_in *server);

@@ -47,7 +47,7 @@ char read_key() {
     return 0;
 }
 
-void handle_input(Client *client, int *running) {
+int handle_input(Client *client, int *running) {
     if (kbhit()) {
         char key = read_key();
 
@@ -73,21 +73,22 @@ void handle_input(Client *client, int *running) {
                     break;
                 case ' ':
                     player_attack(client);
-                    break;
+                    return 1;  // Input received
                 case 'q':
                 case 'Q':
-                    // printf("Quitting\n");
                     restore_input();
                     *running = 0;
-                    break;
+                    return 1;  // Input received
                 default:
                     printf("Unknown key: %c (ASCII: %d)\n", key, (int)key);
-                    break;
+                    return 0;  // Unknown key doesn't reset timer
             }
 
             if (move_vector.x != 0 || move_vector.y != 0) {
                 player_move(client, move_vector);
+                return 1;  // Input received
             }
         }
     }
+    return 0;  // No input
 } 

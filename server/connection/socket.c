@@ -1,5 +1,10 @@
+#define _POSIX_C_SOURCE 199309L
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <signal.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -10,6 +15,7 @@
 #include <shared/models/movement.h>
 
 #include "server/connection/socket.h"
+#include "shared/connection/socket.h"
 
 #define BUFF_SIZE 512
 
@@ -88,7 +94,6 @@ int server_receive_message(Client *client, MessageType *out_message_type, void *
             break;
         }
         case PLAYER_ATTACK: {
-            // No additional data needed for attack
             *out_data_size = 0;
             break;
         }
@@ -108,30 +113,41 @@ void* server_connection_thread(void *arg) {
     MessageType message_type;
     size_t data_size = sizeof(ctx->client->player.id);
 
-    broadcast_message(ctx->all_clients, *ctx->client_count, PLAYER_JOIN, &ctx->client->player.id, data_size);
+    printf("Player %d connected\n", client->player.id);
 
-    while (!(*ctx->shutdown_flag)) {
+    broadcast_message(ctx->all_clients, *ctx->client_count, PLAYER_JOIN,
+                     &ctx->client->player.id, data_size);
+
+    while (1) {
         int result = server_receive_message(client, &message_type, data_buffer, &data_size);
+
         if (result < 0) {
-            if (result == -1) {
-                broadcast_message(ctx->all_clients, *ctx->client_count, PLAYER_LEAVE, &ctx->client->player.id, sizeof(ctx->client->player.id));
+            printf("Player %d disconnected\n", client->player.id);
+
+            pthread_mutex_lock(ctx->mutex);
+            for (int i = 0; i < *ctx->client_count; i++) {
+                if (ctx->all_clients[i].player.id == client->player.id) {
+                    ctx->all_clients[i].sock = -1;
+                    break;
+                }
             }
-            else {
-                printf("Error receiving message from player %d\n", client->player.id);
-            }
+
+            broadcast_message(ctx->all_clients, *ctx->client_count, PLAYER_LEAVE,
+                            &ctx->client->player.id, sizeof(ctx->client->player.id));
+            pthread_mutex_unlock(ctx->mutex);
             break;
         }
 
         // Broadcast to all clients
         if (message_type != NONE && data_size > 0) {
             pthread_mutex_lock(ctx->mutex);
-            broadcast_message(ctx->all_clients, *ctx->client_count, message_type, data_buffer, data_size);
+            broadcast_message(ctx->all_clients, *ctx->client_count, message_type,
+                            data_buffer, data_size);
             pthread_mutex_unlock(ctx->mutex);
         }
     }
 
-    printf("[Thread] Player %d thread exiting\n", client->player.id);
-
+    // Cleanup
     close(client->sock);
     free(client);
     free(ctx);
