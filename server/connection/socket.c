@@ -8,7 +8,8 @@
 #include <shared/models/client.h>
 #include <shared/models/message.h>
 #include <shared/models/movement.h>
-#include "socket.h"
+
+#include "server/connection/socket.h"
 
 #define BUFF_SIZE 512
 
@@ -74,18 +75,10 @@ int server_receive_message(Client *client, MessageType *out_message_type, void *
     *out_message_type = message_type;
 
     switch (message_type) {
-        case SERVER_STATUS:
-            printf("Server full\n");
-            *out_data_size = 0;
-            break;
-        case PLAYER_JOIN:
-            printf("Player %d joined\n", client->player.id);
-            *out_data_size = 0;
-            break;
         case PLAYER_MOVE: {
             MoveData move_data;
             move_data.player_id = client->player.id;
-            bytes_received = recv(client->sock, &move_data.direction, sizeof(MoveData), 0);
+            bytes_received = recv(client->sock, &move_data.direction, sizeof(Vector2), 0);
             if (bytes_received > 0) {
                 memcpy(out_data, &move_data, sizeof(MoveData));
                 *out_data_size = sizeof(MoveData);
@@ -94,11 +87,13 @@ int server_receive_message(Client *client, MessageType *out_message_type, void *
             }
             break;
         }
-        case PLAYER_LEAVE:
-            printf("Player %d left\n", client->player.id);
+        case PLAYER_ATTACK: {
+            // No additional data needed for attack
             *out_data_size = 0;
-            return -1;
+            break;
+        }
         default:
+            printf("Server received unexpected message type: %d from player %d\n", message_type, client->player.id);
             *out_data_size = 0;
             break;
     }
@@ -111,13 +106,15 @@ void* server_connection_thread(void *arg) {
     Client *client = ctx->client;
     char data_buffer[BUFF_SIZE];
     MessageType message_type;
-    size_t data_size;
+    size_t data_size = sizeof(ctx->client->player.id);
 
-    while (1) {
+    broadcast_message(ctx->all_clients, *ctx->client_count, PLAYER_JOIN, &ctx->client->player.id, data_size);
+
+    while (!(*ctx->shutdown_flag)) {
         int result = server_receive_message(client, &message_type, data_buffer, &data_size);
         if (result < 0) {
             if (result == -1) {
-                printf("Player %d disconnected\n", client->player.id);
+                broadcast_message(ctx->all_clients, *ctx->client_count, PLAYER_LEAVE, &ctx->client->player.id, sizeof(ctx->client->player.id));
             }
             else {
                 printf("Error receiving message from player %d\n", client->player.id);
@@ -128,14 +125,12 @@ void* server_connection_thread(void *arg) {
         // Broadcast to all clients
         if (message_type != NONE && data_size > 0) {
             pthread_mutex_lock(ctx->mutex);
-            for (int i = 1; i <= *ctx->client_count; i++) {
-                if (ctx->all_clients[i].sock > 0 && ctx->all_clients[i].sock != client->sock) {
-                    send_message(&ctx->all_clients[i], message_type, data_buffer, data_size);
-                }
-            }
+            broadcast_message(ctx->all_clients, *ctx->client_count, message_type, data_buffer, data_size);
             pthread_mutex_unlock(ctx->mutex);
         }
     }
+
+    printf("[Thread] Player %d thread exiting\n", client->player.id);
 
     close(client->sock);
     free(client);

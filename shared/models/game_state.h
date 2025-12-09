@@ -7,4 +7,11 @@ typedef enum {
     GAME_STATE_OVER
 } GameState;
 
+typedef struct GameCtx
+{
+    int player_data_ptr;
+    int time_seconds;
+    GameState state;
+} GameCtx;
+
 #endif

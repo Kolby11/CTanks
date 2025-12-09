@@ -13,6 +13,7 @@ typedef enum {
     PLAYER_JOIN,
     PLAYER_LEAVE,
     PLAYER_MOVE,
+    PLAYER_ATTACK
 } MessageType;
 
 typedef GameState GameStateChangedData;

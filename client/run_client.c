@@ -28,6 +28,8 @@ void handle_signal(int sig) {
 
 int run_client(char *ipv4_addr, int port) {
     struct sockaddr_in server;
+    GameCtx game_ctx;
+
     int sock = connect_server(ipv4_addr, port, &server);
     
     if (sock < 0) {
@@ -61,7 +63,7 @@ int run_client(char *ipv4_addr, int port) {
         // render_game(client);
         
         // Handle input and send to server
-        handle_input(client);
+        handle_input(client, &running);
         
         usleep(16000);
     }

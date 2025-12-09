@@ -1,16 +1,14 @@
 #ifndef SHARED_MODELS_MOVEMENT_H
 #define SHARED_MODELS_MOVEMENT_H
 
-typedef enum {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
-} MoveDirection;
+typedef struct Vector2 {
+    int x;
+    int y;
+} Vector2;
 
 typedef struct {
     PlayerId player_id;
-    MoveDirection direction;
+    Vector2 direction;
 } MoveData;
 
 #endif

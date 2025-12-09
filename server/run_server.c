@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
 #include "connection/socket.h"
 #include "shared/models/client.h"
@@ -48,9 +49,9 @@ int run_server(const int PORT, const int MAX_PLAYERS, int *PIPE_FD) {
             continue;
         }
         
-        client->player.id = ++client_count;
+        client->player.id = client_count;
         clients[client_count] = *client;
-        printf("Player %d connected!\n", client->player.id);
+        client_count++;
         pthread_mutex_unlock(&players_mutex);
 
         send_message(client, PLAYER_ASSIGN_ID, &client->player.id, sizeof(PlayerId));

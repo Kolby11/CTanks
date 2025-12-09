@@ -1,4 +1,3 @@
-#include "input_handler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -6,9 +5,11 @@
 #include <sys/select.h>
 #include <string.h>
 
+#include "input_handler.h"
+#include "movement.h"
+#include "attack.h"
 #include "shared/models/message.h"
 #include "shared/models/movement.h"
-#include "client/movement/movement.h"
 
 static struct termios old_term, new_term;
 
@@ -46,44 +47,47 @@ char read_key() {
     return 0;
 }
 
-void handle_input(Client *client) {
+void handle_input(Client *client, int *running) {
     if (kbhit()) {
         char key = read_key();
-        
+
         if (key != 0) {
-            // printf("Key pressed: %c\n", key);
-            
+            Vector2 move_vector = {0, 0};
+
             switch(key) {
                 case 'w':
                 case 'W':
-                    printf("Moving UP\n");
-                    player_move(client, UP);
+                    move_vector.y += 1;
                     break;
                 case 's':
                 case 'S':
-                    printf("Moving DOWN\n");
-                    player_move(client, DOWN);
+                    move_vector.y -= 1;
                     break;
                 case 'a':
                 case 'A':
-                    printf("Moving LEFT\n");
-                    player_move(client, LEFT);
+                    move_vector.x -= 1;
                     break;
                 case 'd':
                 case 'D':
-                    printf("Moving RIGHT\n");
-                    player_move(client, RIGHT);
+                    move_vector.x += 1;
+                    break;
+                case ' ':
+                    player_attack(client);
                     break;
                 case 'q':
                 case 'Q':
-                    printf("Quitting\n");
+                    // printf("Quitting\n");
                     restore_input();
-                    exit(0);
+                    *running = 0;
                     break;
                 default:
                     printf("Unknown key: %c (ASCII: %d)\n", key, (int)key);
                     break;
             }
+
+            if (move_vector.x != 0 || move_vector.y != 0) {
+                player_move(client, move_vector);
+            }
         }
     }
-}
+} 

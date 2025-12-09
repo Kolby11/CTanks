@@ -46,7 +46,6 @@ int client_receive_message(Client *client) {
     ssize_t bytes_received = recv(client->sock, &message_type, sizeof(MessageType), MSG_DONTWAIT);
 
     if (bytes_received <= 0) {
-        // No data available or error
         return 0;
     }
 
@@ -60,27 +59,40 @@ int client_receive_message(Client *client) {
             break;
         case PLAYER_ASSIGN_ID: {
             PlayerId player_id;
-            bytes_received = recv(client->sock, &player_id, sizeof(PlayerId), 0);
+            bytes_received = recv(client->sock, &player_id, sizeof(PlayerId), MSG_DONTWAIT);
             if (bytes_received > 0) {
                 client->player.id = player_id;
-                printf("Received player id: %d\n", client->player.id);
+                printf("Player id: %d\n", client->player.id);
             }
             break;
         }
-        case PLAYER_JOIN:
-            printf("Player %d joined\n", client->player.id);
+        case PLAYER_JOIN: {
+            PlayerId player_id;
+            bytes_received = recv(client->sock, &player_id, sizeof(PlayerId), MSG_DONTWAIT);
+            if (bytes_received > 0) {
+                printf("Player %d joined\n", player_id);
+            }
             break;
-        case PLAYER_LEAVE:
-            printf("Player %d left\n", client->player.id);
+        }
+        case PLAYER_LEAVE: {
+            PlayerId player_id;
+            bytes_received = recv(client->sock, &player_id, sizeof(PlayerId), MSG_DONTWAIT);
+            if (bytes_received > 0) {
+                printf("Player %d left\n", player_id);
+            }
             break;
+        }
         case PLAYER_MOVE: {
             MoveData move_data;
-            bytes_received = recv(client->sock, &move_data, sizeof(MoveData), 0);
+            bytes_received = recv(client->sock, &move_data, sizeof(MoveData), MSG_DONTWAIT);
             if (bytes_received > 0) {
-                printf("Player %d moved: %d\n", move_data.player_id, move_data.direction);
+                printf("Player %d moved: %d %d\n", move_data.player_id, move_data.direction.x, move_data.direction.y);
             }
             break;
         }
+        case PLAYER_ATTACK:
+            printf("Player %d attacked\n", client->player.id);
+            break;
         default:
             printf("Received unknown message type: %d\n", message_type);
             break;
