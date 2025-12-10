@@ -113,7 +113,7 @@ void* server_connection_thread(void *arg) {
     MessageType message_type;
     size_t data_size = sizeof(ctx->client->player.id);
 
-    printf("Player %d connected\n", client->player.id);
+    // printf("Player %d connected\n", client->player.id);
 
     broadcast_message(ctx->all_clients, *ctx->client_count, PLAYER_JOIN,
                      &ctx->client->player.id, data_size);
@@ -122,7 +122,7 @@ void* server_connection_thread(void *arg) {
         int result = server_receive_message(client, &message_type, data_buffer, &data_size);
 
         if (result < 0) {
-            printf("Player %d disconnected\n", client->player.id);
+            // printf("Player %d disconnected\n", client->player.id);
 
             pthread_mutex_lock(ctx->mutex);
             for (int i = 0; i < *ctx->client_count; i++) {
